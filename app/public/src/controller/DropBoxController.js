@@ -28,10 +28,16 @@ class DropBoxController {
         this.inputFilesEl.addEventListener('change', event => {
 
             this.uploadTask(event.target.files);
-
-            this.snackModalEl.style.display = 'block';
+            this.modalShow();
+            this.inputFilesEl.value = '';
 
         });
+
+    }
+
+    modalShow(show = true) {
+
+        this.snackModalEl.style.display = (show) ? 'block' : 'none';
 
     }
 
@@ -49,12 +55,15 @@ class DropBoxController {
 
                 ajax.onload = event => {
 
+                    this.modalShow(false);
+
                     try {
 
                         resolve(JSON.parse(ajax.responseText));
 
                     } catch (e) {
 
+                        this.modalShow(false);
                         reject(e);
 
                     }
@@ -63,6 +72,7 @@ class DropBoxController {
 
                 ajax.onerror = event => {
 
+                    this.modalShow(false);
                     reject(event);
 
                 }
@@ -100,9 +110,26 @@ class DropBoxController {
         this.progressBarEl.style.width = `${porcent}%`;
 
         this.namefileEl.innerHTML = file.name;
-        this.namefileEl.innerHTML = '';
+        this.namefileEl.innerHTML = this.formatTimeToHuman(timeleft);
+    }
 
-        console.log(timespent, timeleft, porcent);
+    formatTimeToHuman(duration) {
+
+        let seconds = parseInt((duration / 100) % 60);
+        let minutes = parseInt((duration / (1000 * 60)) % 60);
+        let hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+        if (hours > 0) {
+            return `${hours} horas. ${minutes} minutos e ${seconds} segundo`;
+        }
+        if (minutes > 0) {
+            return `${minutes} minutos e ${seconds} segundo`;
+        }
+        if (seconds > 0) {
+            return `${seconds} segundo`;
+        }
+
+        return '';
 
     }
 
