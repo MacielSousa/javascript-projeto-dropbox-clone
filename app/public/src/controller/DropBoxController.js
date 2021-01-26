@@ -49,11 +49,28 @@ class DropBoxController {
         //Evento que abre a barra de progresso de upload dos rquivos;
         this.inputFilesEl.addEventListener('change', event => {
 
-            this.uploadTask(event.target.files);
+            this.uploadTask(event.target.files).then(responses => {
+
+                responses.forEach(resp =>{
+
+                    console.log(resp.files['input-file']);
+                    this.getFireBaseRef().push().set(resp.files['input-file']);
+
+                });
+
+                this.modalShow(false);
+
+            });
             this.modalShow();
             this.inputFilesEl.value = '';
 
         });
+
+    }
+
+    getFireBaseRef(){
+
+        return firebase.database().ref('files');
 
     }
 
@@ -79,7 +96,6 @@ class DropBoxController {
 
                 ajax.onload = event => {
 
-                    this.modalShow(false);
 
                     try {
 
@@ -87,7 +103,6 @@ class DropBoxController {
 
                     } catch (e) {
 
-                        this.modalShow(false);
                         reject(e);
 
                     }
@@ -96,7 +111,6 @@ class DropBoxController {
 
                 ajax.onerror = event => {
 
-                    this.modalShow(false);
                     reject(event);
 
                 }
