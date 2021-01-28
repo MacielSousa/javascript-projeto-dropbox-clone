@@ -18,7 +18,7 @@ class DropBoxController {
 
     }
 
-    connecFirebase(){
+    connecFirebase() {
 
         // Your web app's Firebase configuration
         var firebaseConfig = {
@@ -32,6 +32,7 @@ class DropBoxController {
         };
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+
 
     }
 
@@ -49,12 +50,30 @@ class DropBoxController {
         //Evento que abre a barra de progresso de upload dos rquivos;
         this.inputFilesEl.addEventListener('change', event => {
 
+            this.btnSendFileEl.disabled = true;
             this.uploadTask(event.target.files).then(responses => {
 
-                responses.forEach(resp =>{
+                responses.forEach(resp => {
+
+                    this.getFirebaseRef().push().set(resp.files['input-file']);
+
+                });
+
+                this.uploadComplete();
+
+            }).catch(err => {
+
+                this.uploadComplete();
+                console.error(err);
+            });
+
+
+            this.uploadTask(event.target.files).then(responses => {
+
+                responses.forEach(resp => {
 
                     console.log(resp.files['input-file']);
-                    this.getFireBaseRef().push().set(resp.files['input-file']);
+                    this.getFirebaseRef().push().set(resp.files['input-file']);
 
                 });
 
@@ -62,13 +81,22 @@ class DropBoxController {
 
             });
             this.modalShow();
-            this.inputFilesEl.value = '';
 
         });
 
     }
 
-    getFireBaseRef(){
+    //Metodo que controla a carga e downloads
+    uploadComplete() {
+
+        this.modalShow(false);
+        this.inputFilesEl.value = '';
+        this.btnSendFileEl.disabled = false;
+
+    }
+
+    //Enviar os docuemntos para o banco de dados;
+    getFirebaseRef() {
 
         return firebase.database().ref('files');
 
@@ -351,6 +379,16 @@ class DropBoxController {
                 <div class="name text-center">Meus Documentos</div>
             </li>
         `;
+
+    }
+
+    readFiles() {
+
+        this.getFirebaseRef().on('value', snapshot => {
+
+
+
+        })
 
     }
 
