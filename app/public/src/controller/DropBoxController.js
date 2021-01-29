@@ -9,12 +9,16 @@ class DropBoxController {
         this.progressBarEl = this.snackModalEl.querySelector(".mc-progress-bar-fg");
         this.namefileEl = this.snackModalEl.querySelector(".filename");
         this.timeleftEl = this.snackModalEl.querySelector(".timeleft");
+        this.listFilesEl = document.querySelector('#list-of-files-and-directories');
 
         //Metodo que faz conecxão com o Banco fireBase;
         this.connecFirebase();
 
         //Inicializanodo a chamada dos eventos;
         this.initEvents();
+
+        //Carregando docuemntos;
+        this.readFiles();
 
     }
 
@@ -67,19 +71,6 @@ class DropBoxController {
                 console.error(err);
             });
 
-
-            this.uploadTask(event.target.files).then(responses => {
-
-                responses.forEach(resp => {
-
-                    console.log(resp.files['input-file']);
-                    this.getFirebaseRef().push().set(resp.files['input-file']);
-
-                });
-
-                this.modalShow(false);
-
-            });
             this.modalShow();
 
         });
@@ -371,14 +362,20 @@ class DropBoxController {
     }
 
     //Selecionando modelo do icone;
-    getFileView() {
+    getFileView(file, key){
 
-        return `
-            <li>
-                ${this.getFileIconView(file)}
-                <div class="name text-center">Meus Documentos</div>
-            </li>
+        let li = document.createElement('li');
+
+        li.dataset.key = key;
+
+        li.innerHTML = `
+            ${this.getFileIconView(file)}
+            <div class="name text-center">${file.name}</div>
         `;
+
+        this.initEventsLi(li);
+
+        return li;
 
     }
 
@@ -386,10 +383,29 @@ class DropBoxController {
 
         this.getFirebaseRef().on('value', snapshot => {
 
+            this.listFilesEl.innerHTML = '';
+            snapshot.forEach(snapshotItem =>{
+                
+                let key = snapshotItem.key;
+                let data = snapshotItem.val();
 
+                this.listFilesEl.appendChild(this.getFileView(data, key));
 
-        })
+            });
+
+        });
 
     }
+
+    initEventsLi(li){
+
+        li.addEventListener('click', e => {
+
+            li.classList.toggle('selected');
+
+        });
+
+    }
+
 
 }
