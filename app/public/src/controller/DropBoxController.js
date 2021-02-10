@@ -2,6 +2,9 @@ class DropBoxController {
 
     constructor() {
 
+        //Evento de controle os botões nova pasta, excluir, renomear;
+        this.onselectionchange = new Event('selectionchange');
+
         //Resgatando os elementos html da pagina;
         this.btnSendFileEl = document.querySelector("#btn-send-file");
         this.inputFilesEl = document.querySelector('#files');
@@ -10,6 +13,11 @@ class DropBoxController {
         this.namefileEl = this.snackModalEl.querySelector(".filename");
         this.timeleftEl = this.snackModalEl.querySelector(".timeleft");
         this.listFilesEl = document.querySelector('#list-of-files-and-directories');
+
+
+        this.btnNewFolder = document.querySelector('#btn-new-folder');
+        this.btnRename = document.querySelector('#btn-rename');
+        this.btnDelete = document.querySelector('#btn-delete');
 
         //Metodo que faz conecxão com o Banco fireBase;
         this.connecFirebase();
@@ -40,8 +48,37 @@ class DropBoxController {
 
     }
 
+    getSelction() {
+
+        return this.listFilesEl.querySelectorAll('.selected');
+
+    }
+
     //Metodo que controla os eventos da pagina;
     initEvents() {
+
+        //Evento
+        this.listFilesEl.addEventListener('selectionchange', event => {
+
+            console.log(this.getSelction().length);
+            switch (this.getSelction().length) {
+
+                case 0:
+                    this.btnDelete.style.display = 'none';
+                    this.btnRename.style.display = 'none';
+                    break;
+                case 1:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'block';
+                    break;
+
+                default:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'none';
+
+            }
+
+        });
 
         //Evento que abre pasta para fazer upload de arquivos;
         this.btnSendFileEl.addEventListener('click', event => {
@@ -362,7 +399,7 @@ class DropBoxController {
     }
 
     //Selecionando modelo do icone;
-    getFileView(file, key){
+    getFileView(file, key) {
 
         let li = document.createElement('li');
 
@@ -384,8 +421,8 @@ class DropBoxController {
         this.getFirebaseRef().on('value', snapshot => {
 
             this.listFilesEl.innerHTML = '';
-            snapshot.forEach(snapshotItem =>{
-                
+            snapshot.forEach(snapshotItem => {
+
                 let key = snapshotItem.key;
                 let data = snapshotItem.val();
 
@@ -397,11 +434,56 @@ class DropBoxController {
 
     }
 
-    initEventsLi(li){
+    initEventsLi(li) {
 
         li.addEventListener('click', e => {
 
+            if (e.shiftKey) {
+
+                let firstLi = this.listFilesEl.querySelector('.selected');
+
+                if (firstLi) {
+
+                    let indexStart;
+                    let indexEnd;
+                    let lis = li.parentElement.childNodes;
+                    lis.forEach((el, index) => {
+
+                        if (firstLi === el) indexStart = index;
+                        if (li === el) indexEnd = index;
+
+                    });
+
+                    let index = [indexStart, indexEnd].sort();
+
+                    lis.forEach((el, i) => {
+
+                        if (i >= index[0] && i <= index[1]) {
+                            el.classList.add('selected');
+                        }
+
+                    });
+
+                    this.listFilesEl.dispatchEvent(this.onselectionchange);
+
+                    return true;
+
+                }
+
+            }
+
+            if (!e.ctrlKey) {
+
+                this.listFilesEl.querySelectorAll('li.selected').forEach(el => {
+
+                    el.classList.remove('selected');
+
+                });
+
+            }
+
             li.classList.toggle('selected');
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
         });
 
