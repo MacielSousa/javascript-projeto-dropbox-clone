@@ -2,6 +2,9 @@ class DropBoxController {
 
     constructor() {
 
+        //NAvegando entre as patas;
+        this.currentFolder = ['dropbox'];
+
         //Evento de controle os botões nova pasta, excluir, renomear;
         this.onselectionchange = new Event('selectionchange');
 
@@ -79,6 +82,21 @@ class DropBoxController {
     initEvents() {
 
 
+        //Criando pasta;
+        this.btnNewFolder.addEventListener('click', e => {
+
+            let name = prompt('Nome da nova pasta:');
+            if(name){
+                this.getFirebaseRef().push().set({
+                    name,
+                    type:'folder',
+                    path:this.currentFolder.join('/')
+                })
+            }
+
+        });
+
+        //Excluindo arquivos;
         this.btnDelete.addEventListener('click', e => {
 
             this.removeTask().then(responses => {
@@ -101,6 +119,7 @@ class DropBoxController {
 
         })
 
+        //Renomeando arquivos;
         this.btnRename.addEventListener('click', e => {
 
             let li = this.getSelction()[0];
